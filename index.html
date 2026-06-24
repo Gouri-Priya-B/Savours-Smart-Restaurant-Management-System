@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Savour — Elite Digital Waiter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- CUSTOM ALERT -->
+  <div id="custom-alert" class="alert-overlay" style="display:none;">
+    <div class="alert-box">
+      <div class="alert-icon" id="alert-icon">✦</div>
+      <h3 id="alert-title">NOTIFICATION</h3>
+      <p id="alert-msg"></p>
+      <button class="btn-primary" onclick="closeAlert()">CLOSE</button>
+    </div>
+  </div>
+
+  <!-- LOADING SCREEN -->
+  <div id="loading-screen">
+    <div class="loader-content">
+      <div class="loader-logo">SAVOUR</div>
+      <div class="loader-bar"><div class="loader-fill"></div></div>
+      <p class="loader-text">Preparing your experience...</p>
+    </div>
+  </div>
+
+  <!-- HOME SCREEN -->
+  <div id="mode-selection" class="mode-screen" style="display:none;">
+    <div class="home-bg"></div>
+    <div class="home-content">
+      <div class="home-brand">
+        <span class="brand-line"></span>
+        <span class="brand-name">SAVOUR</span>
+        <span class="brand-line"></span>
+      </div>
+      <p class="home-tagline">An Elevated Dining Experience</p>
+      <div class="home-cards">
+        <div class="home-card" onclick="launchApp('customer')">
+          <div class="card-img" style="background-image:url('https://images.unsplash.com/photo-1550966841-3ee32258294c?q=80&w=800')"></div>
+          <div class="card-overlay"></div>
+          <div class="card-info">
+            <span class="card-tag">GUEST ACCESS</span>
+            <h2>Dining Room</h2>
+            <p>Browse menu & order</p>
+            <div class="card-arrow">→</div>
+          </div>
+        </div>
+        <div class="home-card" onclick="launchApp('owner')">
+          <div class="card-img" style="background-image:url('https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?q=80&w=800')"></div>
+          <div class="card-overlay"></div>
+          <div class="card-info">
+            <span class="card-tag staff">STAFF ONLY</span>
+            <h2>Admin Panel</h2>
+            <p>Manage & monitor</p>
+            <div class="card-arrow">→</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SERVICE SELECTOR -->
+  <div id="service-selector" class="overlay" style="display:none;">
+    <div class="modal-card" style="max-width:400px;">
+      <div class="modal-header">
+        <h2>Select Service</h2>
+        <p>How would you like to dine today?</p>
+      </div>
+      <div id="main-service-btns" style="display:grid;gap:12px;">
+        <button class="service-btn" onclick="showTableInput()">
+          <span class="svc-icon">🍽️</span>
+          <span class="svc-text"><strong>Dine-In</strong><small>Seat yourself at a table</small></span>
+          <span class="svc-arrow">›</span>
+        </button>
+        <button class="service-btn" onclick="setService('Parcel')">
+          <span class="svc-icon">🛍️</span>
+          <span class="svc-text"><strong>Parcel</strong><small>Takeaway order</small></span>
+          <span class="svc-arrow">›</span>
+        </button>
+        <button class="service-btn" onclick="setService('Home Delivery')">
+          <span class="svc-icon">🚚</span>
+          <span class="svc-text"><strong>Home Delivery</strong><small>Delivered to your door</small></span>
+          <span class="svc-arrow">›</span>
+        </button>
+      </div>
+      <div id="table-input-section" style="display:none;">
+        <label class="field-label">TABLE NUMBER</label>
+        <input type="number" id="table-no" class="field-input" placeholder="e.g. 05">
+        <button class="btn-primary" style="width:100%;margin-top:8px;" onclick="confirmDineIn()">CONFIRM TABLE</button>
+        <button class="btn-ghost" onclick="resetServiceUI()">← Back to Services</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOMER VIEW — hidden via CSS class only, NO inline style -->
+  <main id="customer-view">
+
+    <!-- TOP NAV -->
+    <nav class="top-nav">
+      <button class="nav-logo" onclick="goHome()">SAVOUR</button>
+      <div class="nav-center">
+        <div id="service-badge" class="svc-badge">GUEST</div>
+      </div>
+      <div class="nav-actions">
+        <button class="nav-btn" onclick="openFeedback()">✦ Feedback</button>
+        <button class="nav-btn" onclick="goHome()">Home</button>
+        <button class="cart-btn" onclick="toggleCart()">
+          <span class="cart-icon">🛒</span>
+          <span id="cart-count" class="cart-count" style="display:none;">0</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- SEARCH & FILTERS -->
+    <div class="search-bar">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="filter-input" class="search-input" placeholder="Search for dishes..." onkeyup="applyFilters()">
+        <button class="search-clear" onclick="clearSearch()" id="search-clear-btn" style="display:none;">×</button>
+      </div>
+    </div>
+
+    <!-- CATEGORY FILTERS -->
+    <div class="cat-strip" id="cat-strip"></div>
+
+    <!-- MENU GRID -->
+    <div id="menu-scroll-area">
+      <div id="menu-grid" class="menu-grid"></div>
+    </div>
+
+    <!-- CALL WAITER FAB -->
+    <button id="call-waiter-btn" class="fab" style="display:none;" onclick="callWaiter()">
+      <span>🛎️</span>
+      <small>WAITER</small>
+    </button>
+
+    <!-- CART DRAWER -->
+    <div id="cart-overlay" class="cart-overlay" onclick="toggleCart()"></div>
+    <div id="cart-drawer" class="cart-drawer">
+      <div class="drawer-head">
+        <h3>Your Order</h3>
+        <button class="close-btn" onclick="toggleCart()">×</button>
+      </div>
+      <div id="cart-service-info" class="cart-service-info"></div>
+      <div id="cart-items" class="cart-items-list"></div>
+      <div class="drawer-foot">
+        <div class="cart-total-row">
+          <span>Subtotal</span><span id="cart-subtotal">₹0</span>
+        </div>
+        <div class="cart-total-row tax">
+          <span>GST (5%)</span><span id="cart-tax">₹0</span>
+        </div>
+        <div class="cart-total-row grand">
+          <span>Total</span><span id="cart-total">₹0</span>
+        </div>
+        <button class="btn-primary" style="width:100%;margin-top:14px;" onclick="showCheckout()">PROCEED TO CHECKOUT</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- CHECKOUT MODAL -->
+  <div id="checkout-modal" class="overlay" style="display:none;">
+    <div class="modal-card" style="max-width:460px;">
+      <div class="modal-header">
+        <h2>Bill Summary</h2>
+        <p>Review your order before payment</p>
+      </div>
+      <div id="bill-details"></div>
+      <h4 class="pay-label">Choose Payment Method</h4>
+      <div class="pay-grid">
+        <button class="pay-btn" onclick="processPayment('UPI')"><span>📱</span>UPI</button>
+        <button class="pay-btn" onclick="processPayment('Card')"><span>💳</span>CARD</button>
+        <button class="pay-btn" onclick="processPayment('Cash')"><span>💵</span>CASH</button>
+      </div>
+      <button class="btn-ghost" onclick="closeCheckout()">← Edit Order</button>
+    </div>
+  </div>
+
+  <!-- FEEDBACK MODAL -->
+  <div id="feedback-modal" class="overlay" style="display:none;">
+    <div class="modal-card feedback-card">
+      <div class="modal-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <h2>Share Feedback</h2>
+          <p>Help us serve you better</p>
+        </div>
+        <button class="close-btn" onclick="closeFeedback()">×</button>
+      </div>
+      <label class="field-label">Overall Rating</label>
+      <div class="star-row" id="star-row">
+        <span class="star" data-val="1" onclick="setRating(1)">★</span>
+        <span class="star" data-val="2" onclick="setRating(2)">★</span>
+        <span class="star" data-val="3" onclick="setRating(3)">★</span>
+        <span class="star" data-val="4" onclick="setRating(4)">★</span>
+        <span class="star" data-val="5" onclick="setRating(5)">★</span>
+      </div>
+      <p id="rating-label" class="rating-label"></p>
+      <label class="field-label">Category</label>
+      <div class="category-grid">
+        <button class="cat-chip" onclick="selectCat(this,'Food Quality')">🍽 Food Quality</button>
+        <button class="cat-chip" onclick="selectCat(this,'Service')">🤝 Service</button>
+        <button class="cat-chip" onclick="selectCat(this,'Ambience')">✨ Ambience</button>
+        <button class="cat-chip" onclick="selectCat(this,'Value')">💰 Value</button>
+        <button class="cat-chip" onclick="selectCat(this,'Cleanliness')">🧹 Cleanliness</button>
+        <button class="cat-chip" onclick="selectCat(this,'Overall')">⭐ Overall</button>
+      </div>
+      <label class="field-label" style="margin-top:16px;">Your Name <span style="opacity:.5;font-weight:400;">(optional)</span></label>
+      <input type="text" id="fb-name" class="field-input" placeholder="e.g. Ravi Kumar">
+      <label class="field-label">Comments</label>
+      <textarea id="fb-comment" class="field-input fb-textarea" placeholder="Tell us what you loved or how we can improve..."></textarea>
+      <button class="btn-primary" style="width:100%;margin-top:8px;" onclick="submitFeedback()">SUBMIT FEEDBACK</button>
+    </div>
+  </div>
+
+  <!-- ITEM DETAIL MODAL -->
+  <div id="item-modal" class="overlay" style="display:none;">
+    <div class="modal-card item-detail-card" style="max-width:480px;padding:0;overflow:hidden;">
+      <img id="item-modal-img" src="" alt="" style="width:100%;height:220px;object-fit:cover;">
+      <div style="padding:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <h2 id="item-modal-name" style="margin:0;font-family:'Cormorant Garamond',serif;font-size:1.6rem;"></h2>
+          <span id="item-modal-price" class="item-price-tag"></span>
+        </div>
+        <p id="item-modal-desc" style="color:var(--text-muted);font-size:.9rem;line-height:1.6;margin-bottom:20px;"></p>
+        <button class="btn-primary" style="width:100%;" onclick="addFromModal()">ADD TO CART</button>
+        <button class="btn-ghost" onclick="closeItemModal()">← Back to Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OWNER VIEW — NO inline display:none, CSS handles hiding -->
+  <div id="owner-view">
+
+    <!-- LOGIN -->
+    <div id="owner-login" class="overlay" style="position:fixed;inset:0;display:none;">
+      <div class="modal-card" style="max-width:360px;width:90%;text-align:center;">
+        <div class="login-logo">SAVOUR</div>
+        <h3>Admin Access</h3>
+        <p style="color:var(--text-muted);margin-bottom:20px;font-size:.9rem;">Enter your PIN to continue</p>
+        <input type="password" id="owner-pass" class="field-input" placeholder="Enter PIN" style="text-align:center;letter-spacing:6px;font-size:1.2rem;" onkeydown="if(event.key==='Enter')handleOwnerLogin()">
+        <button class="btn-primary" style="width:100%;margin-top:4px;" onclick="handleOwnerLogin()">LOGIN</button>
+        <button class="btn-ghost" onclick="goHome()">← Back to Home</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD — NO inline display:none, CSS + class handles it -->
+    <div id="owner-dashboard">
+
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-brand">SAVOUR</div>
+        <div class="sidebar-subtitle">Admin Dashboard</div>
+        <nav class="sidebar-nav">
+          <button class="side-btn active" id="btn-menu-tab" onclick="showAdminTab('menu')">
+            <span>🍴</span> Menu Manager
+          </button>
+          <button class="side-btn" id="btn-orders-tab" onclick="showAdminTab('orders')">
+            <span>📋</span> Orders
+            <span id="order-badge" class="side-badge" style="display:none;">0</span>
+          </button>
+          <button class="side-btn" id="btn-feedback-tab" onclick="showAdminTab('feedback')">
+            <span>💬</span> Feedbacks
+            <span id="fb-count-badge" class="side-badge">0</span>
+          </button>
+          <button class="side-btn" id="btn-stats-tab" onclick="showAdminTab('stats')">
+            <span>📊</span> Analytics
+          </button>
+        </nav>
+        <button class="sidebar-exit" onclick="goHome()">EXIT ADMIN</button>
+      </aside>
+
+      <!-- DASH MAIN -->
+      <main class="dash-main">
+
+        <!-- MENU TAB -->
+        <div id="tab-menu">
+          <div class="dash-header">
+            <h2>Menu Manager</h2>
+            <p>Add, edit, or remove items from your menu</p>
+          </div>
+          <div class="add-item-card">
+            <h4>Add New Item</h4>
+            <div class="add-item-grid">
+              <div>
+                <label class="field-label">Item Name</label>
+                <input type="text" id="new-name" class="field-input" placeholder="e.g. Spicy Chicken Wrap">
+              </div>
+              <div>
+                <label class="field-label">Price (₹)</label>
+                <input type="number" id="new-price" class="field-input" placeholder="e.g. 250">
+              </div>
+              <div>
+                <label class="field-label">Category</label>
+                <select id="new-cat" class="field-input">
+                  <option value="Specials">Specials</option>
+                  <option value="Burger">Burger</option>
+                  <option value="Pizza">Pizza</option>
+                  <option value="Rice">Rice</option>
+                  <option value="Pasta">Pasta</option>
+                  <option value="Sushi">Sushi</option>
+                  <option value="Steak">Steak</option>
+                  <option value="Taco">Taco</option>
+                  <option value="Salad">Salad</option>
+                  <option value="Dessert">Dessert</option>
+                  <option value="Drinks">Drinks</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Image URL <span style="opacity:.5;">(optional)</span></label>
+                <input type="text" id="new-img" class="field-input" placeholder="https://...">
+              </div>
+            </div>
+            <button class="btn-primary" onclick="addNewItem()">+ ADD TO MENU</button>
+          </div>
+          <div class="admin-menu-controls">
+            <input type="text" id="admin-search" class="field-input" placeholder="🔍 Filter menu items..." style="max-width:300px;" oninput="filterAdminList()">
+            <span id="admin-item-count" class="item-count-label"></span>
+          </div>
+          <div id="admin-menu-list"></div>
+        </div>
+
+        <!-- ORDERS TAB -->
+        <div id="tab-orders" style="display:none;">
+          <div class="dash-header">
+            <h2>Orders</h2>
+            <p>Live and recent customer orders</p>
+          </div>
+          <div id="admin-orders-list"><p class="empty-state">No orders placed yet.</p></div>
+        </div>
+
+        <!-- FEEDBACK TAB -->
+        <div id="tab-feedback" style="display:none;">
+          <div class="dash-header">
+            <h2>Customer Feedbacks</h2>
+            <p>What your guests are saying</p>
+          </div>
+          <div id="feedback-stats-row" class="stats-row" style="margin-bottom:24px;"></div>
+          <div id="admin-feedback-list"><p class="empty-state">No feedbacks yet.</p></div>
+        </div>
+
+        <!-- STATS TAB -->
+        <div id="tab-stats" style="display:none;">
+          <div class="dash-header">
+            <h2>Analytics</h2>
+            <p>Performance overview</p>
+          </div>
+          <div id="stats-content"></div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
