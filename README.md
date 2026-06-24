@@ -17,6 +17,3 @@ Example:
 
 ## Screenshots
 
-![Home Page](screenshots/home.png)
-
-![Menu Page](screenshots/menu.png)
